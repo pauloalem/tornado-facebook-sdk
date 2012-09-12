@@ -2,7 +2,7 @@ from tornado import testing
 from facebook import facebook
 from tornado.ioloop import IOLoop
 from tests import test_user_id, test_app_key
-import datetime
+import time
 
 class GraphAPITestCase(testing.AsyncTestCase):
 
@@ -34,11 +34,23 @@ class GraphAPITestCase(testing.AsyncTestCase):
             self.wait()
 
     def test_put_object(self):
-        #putting on a test user wall is not working
         graph = facebook.GraphAPI(test_app_key)
         graph.put_object(test_user_id,
                 "feed",
                 self.stop,
-                message="Another message in the Wall {}".format(datetime.datetime.now()))
+                message="Another message in the Wall {}".format(time.time()))
         response = self.wait()
         self.assertIn('id', response)
+
+    def test_delete_object(self):
+        graph = facebook.GraphAPI(test_app_key)
+        graph.put_object(test_user_id,
+                "feed",
+                self.stop,
+                message="Another message in the Wall {}".format(time.time()))
+        response = self.wait()
+        object_id = response['id']
+        graph.delete_object(object_id, self.stop)
+        deleted_response = self.wait()
+        self.assertTrue(deleted_response)
+

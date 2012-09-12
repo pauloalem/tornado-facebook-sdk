@@ -3,6 +3,9 @@ import urllib
 
 from tornado import gen
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
+import logging
+
+log = logging.Logger(__name__)
 
 
 try:
@@ -18,7 +21,7 @@ class GraphAPI(object):
     def get_object(self, uid, callback):
         """
         Fetchs given `uid` object from the graph.
-        
+
         uid -- object's facebook graph id
         callback -- function to be called when the async request data is ready
         """
@@ -32,6 +35,11 @@ class GraphAPI(object):
         self.request("{0}/{1}".format(uid, name), 'POST', body=data,
                      callback=callback)
 
+    def delete_object(self, uid, callback):
+        """
+        Deletes a object via it's identifier `uid`
+        """
+        self.request(uid, 'DELETE', callback=callback)
 
     @gen.engine
     def request(self, path, method="GET", query=None, body=None,
@@ -59,7 +67,7 @@ class GraphAPI(object):
         url = "https://graph.facebook.com/" + path 
         if query_string:
             url += "?" + query_string
-        print url
+        log.debug(url)
 
         client = AsyncHTTPClient()
         request = HTTPRequest(url, method=method, body=body)
