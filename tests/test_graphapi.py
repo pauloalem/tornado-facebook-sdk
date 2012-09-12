@@ -4,6 +4,9 @@ from tornado.ioloop import IOLoop
 from tests import test_user_id, test_app_key
 import time
 
+def create_msg():
+    return "Another message in the Wall {}".format(time.time())
+
 class GraphAPITestCase(testing.AsyncTestCase):
 
     #TODO: create a test user for each run
@@ -38,7 +41,7 @@ class GraphAPITestCase(testing.AsyncTestCase):
         graph.put_object(test_user_id,
                 "feed",
                 self.stop,
-                message="Another message in the Wall {}".format(time.time()))
+                message=create_msg())
         response = self.wait()
         self.assertIn('id', response)
 
@@ -47,10 +50,20 @@ class GraphAPITestCase(testing.AsyncTestCase):
         graph.put_object(test_user_id,
                 "feed",
                 self.stop,
-                message="Another message in the Wall {}".format(time.time()))
+                message=create_msg())
         response = self.wait()
         object_id = response['id']
         graph.delete_object(object_id, self.stop)
         deleted_response = self.wait()
         self.assertTrue(deleted_response)
+
+    def test_post_wall(self):
+        graph = facebook.GraphAPI(test_app_key)
+        graph.post_wall(create_msg(), profile_id=test_user_id, callback=self.stop)
+        response = self.wait()
+        self.assertIn('id', response)
+        graph.delete_object(response['id'], self.stop)
+        deleted_response = self.wait()
+        self.assertTrue(deleted_response)
+
 

@@ -27,12 +27,12 @@ class GraphAPI(object):
         """
         self.request(uid, callback=callback)
 
-    def put_object(self, uid, name, callback, **data):
+    def put_object(self, profile_id, name, callback, **kwargs):
         """
         Writes given `name` object to the graph, connected to `uid`
         """
 
-        self.request("{0}/{1}".format(uid, name), 'POST', body=data,
+        self.request("{0}/{1}".format(profile_id, name), 'POST', body=kwargs,
                      callback=callback)
 
     def delete_object(self, uid, callback):
@@ -40,6 +40,11 @@ class GraphAPI(object):
         Deletes a object via it's identifier `uid`
         """
         self.request(uid, 'DELETE', callback=callback)
+
+    def post_wall(self, message, profile_id='me', callback=None, **kwargs):
+        kwargs['message'] = message
+        self.request("{0}/feed".format(profile_id), 'POST', body=kwargs,
+                     callback=callback)
 
     @gen.engine
     def request(self, path, method="GET", query=None, body=None,
