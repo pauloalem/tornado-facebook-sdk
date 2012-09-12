@@ -15,14 +15,29 @@ class GraphAPI(object):
     def __init__(self, access_token=None):
         self.access_token = access_token
 
-    def get_object(self, path, callback):
-        """Fetchs the given object from the graph."""
-        self.request(path, callback=callback)
+    def get_object(self, uid, callback):
+        """
+        Fetchs given `uid` object from the graph.
+        
+        uid -- object's facebook graph id
+        callback -- function to be called when the async request data is ready
+        """
+        self.request(uid, callback=callback)
+
+    def put_object(self, uid, name, callback, **data):
+        """
+        Writes given `name` object to the graph, connected to `uid`
+        """
+
+        self.request("{0}/{1}".format(uid, name), 'POST', body=data,
+                     callback=callback)
+
 
     @gen.engine
     def request(self, path, method="GET", query=None, body=None,
                 callback=None):
-        """Makes request on `path` in the Graph API.
+        """
+        Makes request on `path` in the graph.
 
         path -- endpoint to the facebook graph api
         method -- GET, POST, etc
@@ -41,7 +56,10 @@ class GraphAPI(object):
         query_string = urllib.urlencode(query) if query else ""
         body = urllib.urlencode(body) if body else None
 
-        url = "https://graph.facebook.com/" + path + "?" + query_string
+        url = "https://graph.facebook.com/" + path 
+        if query_string:
+            url += "?" + query_string
+        print url
 
         client = AsyncHTTPClient()
         request = HTTPRequest(url, method=method, body=body)
