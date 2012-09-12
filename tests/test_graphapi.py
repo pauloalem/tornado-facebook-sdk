@@ -31,7 +31,7 @@ class GraphAPITestCase(testing.AsyncTestCase):
             self.wait()
 
     def test_put_object(self):
+        #putting on a test user wall is not working
         graph = facebook.GraphAPI(test_app_key)
         graph.put_object(test_user_id, "feed", self.stop, message="Another message in the Wall")
         response = self.wait()
-        import pdb; pdb.set_trace()
