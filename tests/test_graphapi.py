@@ -1,5 +1,5 @@
 from tornado import testing
-from facebook import facebook
+import facebook
 from tornado.ioloop import IOLoop
 from tests import test_user_id, test_app_key
 import time
