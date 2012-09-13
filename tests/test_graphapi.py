@@ -65,5 +65,3 @@ class GraphAPITestCase(testing.AsyncTestCase):
         graph.delete_object(response['id'], self.stop)
         deleted_response = self.wait()
         self.assertTrue(deleted_response)
-
-
