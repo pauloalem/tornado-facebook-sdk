@@ -18,16 +18,17 @@ from tornado import gen
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 import logging
 
-log = logging.Logger(__name__)
-
 
 try:
     import json
 except ImportError:
     import simplejson as json
 
+GRAPH_URL = "https://graph.facebook.com/"
 
 class GraphAPI(object):
+
+
     def __init__(self, access_token=None):
         self.access_token = access_token
 
@@ -38,34 +39,52 @@ class GraphAPI(object):
         uid -- object's facebook graph id
         callback -- function to be called when the async request data is ready
         """
-        self.request(uid, callback=callback)
+        self._make_request(uid, callback=callback)
 
     def put_object(self, profile_id, name, callback, **kwargs):
         """
         Writes given `name` object to the graph, connected to `uid`
         """
 
-        self.request("{0}/{1}".format(profile_id, name), 'POST', body=kwargs,
+        self._make_request("{0}/{1}".format(profile_id, name), method='POST', body=kwargs,
                      callback=callback)
 
     def delete_object(self, uid, callback):
         """
         Deletes a object via it's identifier `uid`
         """
-        self.request(uid, 'DELETE', callback=callback)
+        self._make_request(uid, method='DELETE', callback=callback)
+
+    def fql(self, fql, query=None, method="GET", body=None, callback=None):
+        """
+        Queries the graph api using the facebook query language
+
+        fql -- a string(simple query) or dictionary(in case you want do do a multiquery)
+        query -- A dictionary that becomes a query string to be appended to the path
+        method -- GET, POST, etc
+        body -- message body
+        callback -- function to be called when the async request finishes
+        """
+
+        query = query or {}
+        query['q'] = fql
+
+        self._make_request('fql', query=query, method=method, body=body,
+                callback=callback)
 
     def post_wall(self, message, profile_id='me', callback=None, **kwargs):
         kwargs['message'] = message
-        self.request("{0}/feed".format(profile_id), 'POST', body=kwargs,
+        self._make_request("{0}/feed".format(profile_id), method='POST', body=kwargs,
                      callback=callback)
 
     @gen.engine
-    def request(self, path, method="GET", query=None, body=None,
+    def _make_request(self, path, query=None, method="GET", body=None,
                 callback=None):
         """
         Makes request on `path` in the graph.
 
         path -- endpoint to the facebook graph api
+        query -- A dictionary that becomes a query string to be appended to the path
         method -- GET, POST, etc
         body -- message body
         callback -- function to be called when the async request finishes
@@ -82,10 +101,9 @@ class GraphAPI(object):
         query_string = urllib.urlencode(query) if query else ""
         body = urllib.urlencode(body) if body else None
 
-        url = "https://graph.facebook.com/" + path 
+        url = GRAPH_URL + path
         if query_string:
             url += "?" + query_string
-        log.debug(url)
 
         client = AsyncHTTPClient()
         request = HTTPRequest(url, method=method, body=body)
@@ -101,7 +119,7 @@ class GraphAPI(object):
                 "url": response.request.url,
             }
         else:
-            raise GraphAPIError('Maintype was not text or image')
+            raise GraphAPIError('Maintype was not text nor image')
 
         if data and isinstance(data, dict) and data.get("error"):
             raise GraphAPIError(data)

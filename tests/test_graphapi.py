@@ -79,3 +79,24 @@ class GraphAPITestCase(testing.AsyncTestCase):
         graph.delete_object(response['id'], self.stop)
         deleted_response = self.wait()
         self.assertTrue(deleted_response)
+
+    def test_fql_query(self):
+        graph = facebook.GraphAPI(test_app_key)
+        graph.fql("select name from user where uid=100004430523129", callback=self.stop)
+        response = self.wait()
+        self.assertIn('data', response)
+        self.assertEqual(len(response['data']), 1)
+        self.assertEqual(response['data'][0]['name'], "John Doe")
+
+    def test_fql_multiquery(self):
+        graph = facebook.GraphAPI(test_app_key)
+        queries = {
+            'q1':"select name from user where uid=100004430523129",
+            'q2':"select name from user where uid=100004430523129"
+        }
+        graph.fql(queries, callback=self.stop)
+        response = self.wait()
+        self.assertIn('data', response)
+        self.assertEqual(len(response['data']), 2)
+        for q in response['data']:
+                self.assertEqual(q['fql_result_set'][0]['name'], "John Doe")
