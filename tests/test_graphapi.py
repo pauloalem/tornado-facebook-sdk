@@ -105,7 +105,6 @@ class GraphAPITestCase(testing.AsyncTestCase):
                 self.assertEqual(q['fql_result_set'][0]['name'], "John Doe")
 
     def test_api(self):
-        import pdb; pdb.set_trace()
         graph = facebook.GraphAPI(test_app_key)
         graph.api('100004430523129', query={'fields': 'first_name, last_name'}, callback=self.stop)
         response = self.wait()

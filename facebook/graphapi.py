@@ -38,8 +38,8 @@ class GraphAPI(object):
 
         uid -- object's facebook graph id
         """
-        query = query or None
-        self._make_request(uid, method='GET', **kwargs)
+        query = query or {}
+        self._make_request(uid, method='GET', query=query, **kwargs)
 
     def put_object(self, uid, name, body=None, **kwargs):
         """
