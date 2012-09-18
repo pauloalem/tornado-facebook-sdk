@@ -52,22 +52,25 @@ class GraphAPITestCase(testing.AsyncTestCase):
 
     def test_put_object(self):
         graph = facebook.GraphAPI(test_app_key)
-        graph.put_object(test_user_id,
+        graph.put_object(
+                test_user_id,
                 "feed",
-                self.stop,
-                message=create_msg())
+                {'message': create_msg()},
+                callback=self.stop)
         response = self.wait()
         self.assertIn('id', response)
 
     def test_delete_object(self):
         graph = facebook.GraphAPI(test_app_key)
-        graph.put_object(test_user_id,
+
+        graph.put_object(
+                test_user_id,
                 "feed",
-                self.stop,
-                message=create_msg())
+                {'message': create_msg()},
+                callback=self.stop)
         response = self.wait()
         object_id = response['id']
-        graph.delete_object(object_id, self.stop)
+        graph.delete_object(object_id, callback=self.stop)
         deleted_response = self.wait()
         self.assertTrue(deleted_response)
 
@@ -76,7 +79,7 @@ class GraphAPITestCase(testing.AsyncTestCase):
         graph.post_wall(create_msg(), profile_id=test_user_id, callback=self.stop)
         response = self.wait()
         self.assertIn('id', response)
-        graph.delete_object(response['id'], self.stop)
+        graph.delete_object(response['id'], callback=self.stop)
         deleted_response = self.wait()
         self.assertTrue(deleted_response)
 
@@ -100,3 +103,11 @@ class GraphAPITestCase(testing.AsyncTestCase):
         self.assertEqual(len(response['data']), 2)
         for q in response['data']:
                 self.assertEqual(q['fql_result_set'][0]['name'], "John Doe")
+
+    def test_api(self):
+        import pdb; pdb.set_trace()
+        graph = facebook.GraphAPI(test_app_key)
+        graph.api('100004430523129', query={'fields': 'first_name, last_name'}, callback=self.stop)
+        response = self.wait()
+        self.assertEqual(response['first_name'], "John")
+        self.assertEqual(response['last_name'], "Doe")

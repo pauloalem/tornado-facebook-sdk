@@ -32,30 +32,30 @@ class GraphAPI(object):
     def __init__(self, access_token=None):
         self.access_token = access_token
 
-    def get_object(self, uid, callback):
+    def get_object(self, uid, query=None, **kwargs):
         """
         Fetchs given `uid` object from the graph.
 
         uid -- object's facebook graph id
-        callback -- function to be called when the async request data is ready
         """
-        self._make_request(uid, callback=callback)
+        query = query or None
+        self._make_request(uid, method='GET', **kwargs)
 
-    def put_object(self, profile_id, name, callback, **kwargs):
+    def put_object(self, uid, name, body=None, **kwargs):
         """
         Writes given `name` object to the graph, connected to `uid`
         """
+        body = body or {}
+        self._make_request("{0}/{1}".format(uid, name), method='POST',
+                body=body, **kwargs)
 
-        self._make_request("{0}/{1}".format(profile_id, name), method='POST', body=kwargs,
-                     callback=callback)
-
-    def delete_object(self, uid, callback):
+    def delete_object(self, uid, **kwargs):
         """
         Deletes a object via it's identifier `uid`
         """
-        self._make_request(uid, method='DELETE', callback=callback)
+        self._make_request(uid, method='DELETE', **kwargs)
 
-    def fql(self, fql, query=None, method="GET", body=None, callback=None):
+    def fql(self, fql, **kwargs):
         """
         Queries the graph api using the facebook query language
 
@@ -66,16 +66,20 @@ class GraphAPI(object):
         callback -- function to be called when the async request finishes
         """
 
-        query = query or {}
+        query = kwargs.get('query', {})
         query['q'] = fql
 
-        self._make_request('fql', query=query, method=method, body=body,
-                callback=callback)
+        self._make_request('fql', query=query, **kwargs)
 
-    def post_wall(self, message, profile_id='me', callback=None, **kwargs):
-        kwargs['message'] = message
-        self._make_request("{0}/feed".format(profile_id), method='POST', body=kwargs,
-                     callback=callback)
+    def post_wall(self, message, profile_id='me', body=None, **kwargs):
+        #XXX move to separate User class?
+        body = body or {}
+        body['message'] = message
+        self._make_request("{0}/feed".format(profile_id), method='POST',
+                body=body, **kwargs)
+
+    def api(self, path, **kwargs):
+        self._make_request(path, **kwargs)
 
     @gen.engine
     def _make_request(self, path, query=None, method="GET", body=None,
