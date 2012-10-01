@@ -81,6 +81,6 @@ Read LICENSE.txt
 
 History
 -------
-This library is based on the `facebook-sdk <https://github.com/pythonforfacebook/facebook-sdk/blob/master/facebook.py>`_ library.
+This library is based on the `facebook-sdk <https://github.com/pythonforfacebook/facebook-sdk>`_ library.
 Originaly, I was going to use it as it's simple and has a nice
 interface, but it's blocking code makes it a no-no.
