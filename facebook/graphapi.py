@@ -12,12 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import urllib
-
 from tornado import gen
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 import logging
 
+try:
+    import urllib.parse as urllib
+except ImportError:
+    import urllib
 
 try:
     import json
@@ -115,7 +117,7 @@ class GraphAPI(object):
 
         content_type = response.headers.get('Content-Type')
         if 'text' in content_type:
-            data = json.loads(response.body)
+            data = json.loads(response.body.decode())
         elif 'image' in content_type:
             data = {
                 "data": response.body,
